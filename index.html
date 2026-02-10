@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bonus Points Calculator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .calculator {
+      background: #16213e;
+      border-radius: 12px;
+      padding: 32px;
+      width: 100%;
+      max-width: 700px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.4rem;
+      margin-bottom: 24px;
+      color: #f5a9b8;
+    }
+
+    .field-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .field-row .field {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1rem;
+      color: #ffffff;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #2a2a4a;
+      border-radius: 6px;
+      background: #0f3460;
+      color: #ffffff;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="number"]:focus {
+      border-color: #f5a9b8;
+    }
+
+    .time-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .time-divider {
+      font-size: 1.2rem;
+      color: #ffffff;
+      line-height: 40px;
+    }
+
+    .time-days {
+      flex: 0 0 auto;
+      text-align: center;
+    }
+
+    .time-days input {
+      width: 80px;
+      padding: 10px 4px;
+      text-align: center;
+    }
+
+    .time-days span {
+      display: block;
+      font-size: 0.8rem;
+      color: #e0e0f0;
+      margin-top: 2px;
+    }
+
+    .ymwd-row {
+      display: flex;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .ymwd-field {
+      flex: 1;
+      text-align: center;
+    }
+
+    .ymwd-field input {
+      width: 100%;
+      padding: 10px 4px;
+      text-align: center;
+    }
+
+    .ymwd-field span {
+      display: block;
+      font-size: 0.8rem;
+      color: #e0e0f0;
+      margin-top: 2px;
+    }
+
+    .checkbox-field {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+
+    .checkbox-field input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #f5a9b8;
+      cursor: pointer;
+    }
+
+    .checkbox-field label {
+      margin: 0;
+      cursor: pointer;
+      color: #ffffff;
+      font-size: 0.95rem;
+    }
+
+    .result-box {
+      background: #0f3460;
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+    }
+
+    .result-col {
+      flex: 1;
+    }
+
+    .result-label {
+      font-size: 0.9rem;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .result-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #f5a9b8;
+    }
+
+    .graph-box {
+      margin-top: 20px;
+      background: #0f3460;
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .graph-title {
+      font-size: 0.95rem;
+      color: #ffffff;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .graph-wrap {
+      position: relative;
+    }
+
+    canvas {
+      width: 100%;
+      height: 320px;
+      display: block;
+      cursor: crosshair;
+    }
+
+    .tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: #16213eee;
+      border: 1px solid #f5a9b8;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      color: #ffffff;
+      line-height: 1.5;
+      white-space: nowrap;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <h1>Super Simple BP Calculator</h1>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="size">Torrent Size (GiB)</label>
+        <input type="number" id="size" min="0" step="any" value="4.5">
+      </div>
+      <div class="field">
+        <label for="seeders">Number of Seeders</label>
+        <input type="number" id="seeders" min="1" step="1" value="10">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Seed Time</label>
+      <div class="time-row">
+        <div class="time-days">
+          <input type="number" id="seedtime" min="0" step="1" value="30">
+          <span>days</span>
+        </div>
+        <div class="time-divider">=</div>
+        <div class="ymwd-row">
+          <div class="ymwd-field">
+            <input type="number" id="years" min="0" step="1" value="0">
+            <span>yr</span>
+          </div>
+          <div class="ymwd-field">
+            <input type="number" id="months" min="0" step="1" value="0">
+            <span>mo</span>
+          </div>
+          <div class="ymwd-field">
+            <input type="number" id="weeks" min="0" step="1" value="0">
+            <span>wk</span>
+          </div>
+          <div class="ymwd-field">
+            <input type="number" id="days" min="0" step="1" value="0">
+            <span>d</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="checkbox-field">
+      <input type="checkbox" id="gp">
+      <label for="gp">Golden Popcorn (2x bonus)</label>
+    </div>
+
+    <div class="result-box">
+      <div class="result-col">
+        <div class="result-label">Per Hour</div>
+        <div class="result-value" id="bphr">—</div>
+      </div>
+      <div class="result-col">
+        <div class="result-label">Per Day</div>
+        <div class="result-value" id="bpday">—</div>
+      </div>
+      <div class="result-col">
+        <div class="result-label">Next 30d</div>
+        <div class="result-value" id="bpmonth">—</div>
+      </div>
+      <div class="result-col">
+        <div class="result-label">Next 365d</div>
+        <div class="result-value" id="bpyear">—</div>
+      </div>
+    </div>
+
+    <div class="graph-box">
+      <div class="graph-title">BP/hr over Seed Time</div>
+      <div class="graph-wrap">
+        <canvas id="graph"></canvas>
+        <div class="tooltip" id="tooltip"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const sizeEl = document.getElementById('size');
+    const seedtimeEl = document.getElementById('seedtime');
+    const yearsEl = document.getElementById('years');
+    const monthsEl = document.getElementById('months');
+    const weeksEl = document.getElementById('weeks');
+    const daysEl = document.getElementById('days');
+    const seedersEl = document.getElementById('seeders');
+    const gpEl = document.getElementById('gp');
+    const bphrEl = document.getElementById('bphr');
+    const bpdayEl = document.getElementById('bpday');
+    const bpmonthEl = document.getElementById('bpmonth');
+    const bpyearEl = document.getElementById('bpyear');
+    const canvas = document.getElementById('graph');
+    const ctx = canvas.getContext('2d');
+    const tooltipEl = document.getElementById('tooltip');
+
+    let syncing = false;
+
+    // --- Time sync ---
+    function daysToYmwd(totalDays) {
+      const y = Math.floor(totalDays / 365);
+      let rem = totalDays % 365;
+      const m = Math.floor(rem / 30);
+      rem = rem % 30;
+      const w = Math.floor(rem / 7);
+      const d = rem % 7;
+      return { y, m, w, d };
+    }
+
+    seedtimeEl.addEventListener('input', () => {
+      if (syncing) return;
+      syncing = true;
+      const total = parseInt(seedtimeEl.value) || 0;
+      const { y, m, w, d } = daysToYmwd(total);
+      yearsEl.value = y;
+      monthsEl.value = m;
+      weeksEl.value = w;
+      daysEl.value = d;
+      syncing = false;
+      calculate();
+    });
+
+    [yearsEl, monthsEl, weeksEl, daysEl].forEach(el => {
+      el.addEventListener('input', () => {
+        if (syncing) return;
+        syncing = true;
+        const total = (parseInt(yearsEl.value) || 0) * 365
+                    + (parseInt(monthsEl.value) || 0) * 30
+                    + (parseInt(weeksEl.value) || 0) * 7
+                    + (parseInt(daysEl.value) || 0);
+        seedtimeEl.value = total;
+        syncing = false;
+        calculate();
+      });
+    });
+
+    // --- Formula ---
+    function bphr(size, seedtime, seeders, isGP) {
+      return size * (0.25 + (0.6 * Math.log(1 + seedtime)) / Math.pow(seeders, 0.6)) * (1 + isGP);
+    }
+
+    // Total BP earned from day startDay over numDays, accounting for increasing rate
+    function totalBpOverDays(size, startDay, numDays, seeders, isGP) {
+      let total = 0;
+      for (let d = 0; d < numDays; d++) {
+        total += bphr(size, startDay + d, seeders, isGP) * 24;
+      }
+      return total;
+    }
+
+    function fmt(n, decimals) {
+      return n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    }
+
+    function formatDaysLabel(totalDays) {
+      const { y, m, w, d } = daysToYmwd(totalDays);
+      const parts = [];
+      if (y > 0) parts.push(y + 'y');
+      if (m > 0) parts.push(m + 'mo');
+      if (w > 0) parts.push(w + 'w');
+      if (d > 0 || parts.length === 0) parts.push(d + 'd');
+      return parts.join(' ');
+    }
+
+    // Store graph layout for hover
+    let graphState = null;
+
+    // --- Graph ---
+    function drawGraph(size, seeders, isGP, currentDays, hoverDay) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+
+      const w = rect.width;
+      const h = rect.height;
+      const pad = { top: 10, right: 15, bottom: 30, left: 50 };
+      const plotW = w - pad.left - pad.right;
+      const plotH = h - pad.top - pad.bottom;
+
+      ctx.clearRect(0, 0, w, h);
+
+      if (size <= 0 || seeders < 1) {
+        graphState = null;
+        return;
+      }
+
+      // X-axis: 3 years, or 1.5x current if beyond that
+      const maxDays = Math.max(1095, Math.ceil((currentDays || 30) * 1.5));
+
+      // Determine comparison seeder counts
+      const seeders50 = Math.floor(seeders * 0.5);
+      const seeders25 = Math.floor(seeders * 0.25);
+      const show50 = seeders >= 2 && seeders50 >= 1 && seeders50 < seeders;
+      const show25 = seeders >= 4 && seeders25 >= 1 && seeders25 < seeders50;
+
+      // Compute curve points and find max Y across all curves
+      const points = [];
+      const points50 = [];
+      const points25 = [];
+      const steps = 300;
+      let maxY = 0;
+      for (let i = 0; i <= steps; i++) {
+        const t = (i / steps) * maxDays;
+        const val = bphr(size, t, seeders, isGP);
+        if (val > maxY) maxY = val;
+        points.push({ t, val });
+        if (show50) {
+          const v50 = bphr(size, t, seeders50, isGP);
+          if (v50 > maxY) maxY = v50;
+          points50.push({ t, val: v50 });
+        }
+        if (show25) {
+          const v25 = bphr(size, t, seeders25, isGP);
+          if (v25 > maxY) maxY = v25;
+          points25.push({ t, val: v25 });
+        }
+      }
+      maxY = maxY * 1.1 || 1;
+
+      // Save state for hover
+      graphState = { pad, plotW, plotH, maxDays, maxY, size, seeders, isGP, seeders50, seeders25, show50, show25 };
+
+      // Grid lines
+      ctx.strokeStyle = '#1a2a50';
+      ctx.lineWidth = 1;
+      const yTicks = 6;
+      for (let i = 0; i <= yTicks; i++) {
+        const y = pad.top + plotH - (i / yTicks) * plotH;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(pad.left + plotW, y);
+        ctx.stroke();
+      }
+
+      // Y-axis labels
+      ctx.fillStyle = '#e0e0f0';
+      ctx.font = '10px -apple-system, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      for (let i = 0; i <= yTicks; i++) {
+        const val = (i / yTicks) * maxY;
+        const y = pad.top + plotH - (i / yTicks) * plotH;
+        ctx.fillText(val.toFixed(2), pad.left - 6, y);
+      }
+
+      // X-axis labels (use y/m/d format for readability)
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      const xTicks = 6;
+      for (let i = 0; i <= xTicks; i++) {
+        const dayVal = Math.round((i / xTicks) * maxDays);
+        const x = pad.left + (i / xTicks) * plotW;
+        ctx.fillText(formatDaysLabel(dayVal), x, pad.top + plotH + 8);
+      }
+
+      // Helper to draw a curve
+      function drawCurve(pts, color, lineWidth, dash) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lineWidth;
+        ctx.setLineDash(dash);
+        ctx.beginPath();
+        for (let i = 0; i < pts.length; i++) {
+          const x = pad.left + (pts[i].t / maxDays) * plotW;
+          const y = pad.top + plotH - (pts[i].val / maxY) * plotH;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Comparison curves (draw first so main curve is on top)
+      if (show25) drawCurve(points25, '#e0a526', 1.5, [2, 4]);
+      if (show50) drawCurve(points50, '#e0a526', 1.5, [8, 4]);
+
+      // Main curve
+      drawCurve(points, '#e0a526', 2, []);
+
+      // Legend
+      const legendItems = [{ label: seeders + ' seeders', dash: [] }];
+      if (show50) legendItems.push({ label: seeders50 + ' seeders (50%)', dash: [8, 4] });
+      if (show25) legendItems.push({ label: seeders25 + ' seeders (25%)', dash: [2, 4] });
+
+      ctx.font = '10px -apple-system, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      const legX = pad.left + 8;
+      let legY = pad.top + 12;
+      for (const item of legendItems) {
+        ctx.strokeStyle = '#e0a526';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash(item.dash);
+        ctx.beginPath();
+        ctx.moveTo(legX, legY);
+        ctx.lineTo(legX + 20, legY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#e0e0f0';
+        ctx.fillText(item.label, legX + 25, legY);
+        legY += 14;
+      }
+
+      // Current position marker
+      if (currentDays >= 0 && currentDays <= maxDays) {
+        const curVal = bphr(size, currentDays, seeders, isGP);
+        const cx = pad.left + (currentDays / maxDays) * plotW;
+        const cy = pad.top + plotH - (curVal / maxY) * plotH;
+
+        // Vertical dashed line
+        ctx.strokeStyle = '#ffffff44';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(cx, pad.top);
+        ctx.lineTo(cx, pad.top + plotH);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Dot
+        ctx.fillStyle = '#e0a526';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Hover crosshair + dots on all curves
+      if (hoverDay != null && hoverDay >= 0 && hoverDay <= maxDays) {
+        const hx = pad.left + (hoverDay / maxDays) * plotW;
+
+        // Vertical crosshair
+        ctx.strokeStyle = '#ffffff55';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 3]);
+        ctx.beginPath();
+        ctx.moveTo(hx, pad.top);
+        ctx.lineTo(hx, pad.top + plotH);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Dots on each curve
+        const hoverCurves = [{ s: seeders }];
+        if (show50) hoverCurves.push({ s: seeders50 });
+        if (show25) hoverCurves.push({ s: seeders25 });
+
+        for (const c of hoverCurves) {
+          const hVal = bphr(size, hoverDay, c.s, isGP);
+          const hy = pad.top + plotH - (hVal / maxY) * plotH;
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(hx, hy, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    // --- Hover ---
+    let currentHoverDay = null;
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!graphState) return;
+      const { pad, plotW, plotH, maxDays, size, seeders, isGP, seeders50, seeders25, show50, show25 } = graphState;
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+
+      if (mx < pad.left || mx > pad.left + plotW || my < pad.top || my > pad.top + plotH) {
+        tooltipEl.style.display = 'none';
+        if (currentHoverDay != null) {
+          currentHoverDay = null;
+          calculate();
+        }
+        return;
+      }
+
+      const day = Math.round(((mx - pad.left) / plotW) * maxDays);
+      currentHoverDay = day;
+      const val = bphr(size, day, seeders, isGP);
+
+      // Redraw with hover
+      const seedtime = parseInt(seedtimeEl.value) || 0;
+      drawGraph(size, seeders, isGP, seedtime, day);
+
+      // Position tooltip
+      const ttX = mx + 14;
+      const ttY = my - 10;
+      let ttHtml = `<b>${formatDaysLabel(day)}</b> (${day}d)<br>` +
+        `${seeders}s: <b>${val.toFixed(4)}</b>/hr · ${(val * 24).toFixed(2)}/day`;
+      if (show50) {
+        const v50 = bphr(size, day, seeders50, isGP);
+        ttHtml += `<br>${seeders50}s: <b>${v50.toFixed(4)}</b>/hr · ${(v50 * 24).toFixed(2)}/day`;
+      }
+      if (show25) {
+        const v25 = bphr(size, day, seeders25, isGP);
+        ttHtml += `<br>${seeders25}s: <b>${v25.toFixed(4)}</b>/hr · ${(v25 * 24).toFixed(2)}/day`;
+      }
+      tooltipEl.innerHTML = ttHtml;
+      tooltipEl.style.display = 'block';
+      tooltipEl.style.left = (ttX + tooltipEl.offsetWidth > rect.width ? mx - tooltipEl.offsetWidth - 10 : ttX) + 'px';
+      tooltipEl.style.top = Math.max(0, ttY - tooltipEl.offsetHeight) + 'px';
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      tooltipEl.style.display = 'none';
+      if (currentHoverDay != null) {
+        currentHoverDay = null;
+        calculate();
+      }
+    });
+
+    // --- Calculate ---
+    function calculate() {
+      const size = parseFloat(sizeEl.value) || 0;
+      const seedtime = parseInt(seedtimeEl.value) || 0;
+      const seeders = parseFloat(seedersEl.value) || 1;
+      const isGP = gpEl.checked ? 1 : 0;
+
+      if (size <= 0 || seeders < 1) {
+        bphrEl.textContent = '—';
+        bpdayEl.textContent = '—';
+        bpmonthEl.textContent = '—';
+        bpyearEl.textContent = '—';
+        drawGraph(size, seeders, isGP, seedtime);
+        return;
+      }
+
+      const val = bphr(size, seedtime, seeders, isGP);
+
+      bphrEl.textContent = fmt(val, 4);
+      bpdayEl.textContent = fmt(val * 24, 2);
+      bpmonthEl.textContent = fmt(totalBpOverDays(size, seedtime, 30, seeders, isGP), 2);
+      bpyearEl.textContent = fmt(totalBpOverDays(size, seedtime, 365, seeders, isGP), 2);
+
+      drawGraph(size, seeders, isGP, seedtime);
+    }
+
+    [sizeEl, seedersEl, gpEl].forEach(el =>
+      el.addEventListener('input', calculate)
+    );
+
+    // Initial sync
+    syncing = true;
+    const initTime = daysToYmwd(parseInt(seedtimeEl.value) || 0);
+    yearsEl.value = initTime.y;
+    monthsEl.value = initTime.m;
+    weeksEl.value = initTime.w;
+    daysEl.value = initTime.d;
+    syncing = false;
+
+    calculate();
+
+    // Redraw on resize
+    window.addEventListener('resize', calculate);
+  </script>
+</body>
+</html>
